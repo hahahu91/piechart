@@ -7,6 +7,21 @@ var start = (Math.PI*3)/2;
 var curent  = start;
 var oldStart = start;
 ctx.font = '10px Arial';
+var requestId = 0;
+var degCur;
+var prevCur = 0;
+
+if (!window.requestAnimationFrame) {
+    window.requestAnimationFrame = (function() {
+        return  window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame || 
+                window.oRequestAnimationFrame ||
+                window.msRequestAnimationFrame ||
+                function(callback, element) {
+                    window.setTimeout(callback, 1000 / 60);
+                };
+    })();
+}
 
 function addElement(value){
     data[data.length] = value;
@@ -64,30 +79,44 @@ var isRecalculation;
 function startRecalculation(event) {
     isRecalculation = true;
     var degrees = mousecoordinates(event);
-    var degCur = inDeg(curent);
+    degCur = inDeg(curent);
     var cur = degrees - degCur;
     if (cur < 0) {cur += 360};
     curent = inRad(degrees);
     oldStart = start;
-    
+    requestId = window.requestAnimationFrame(animate);
 }
 
 function recalculation(event) {
     if (isRecalculation == true)
     {
         var degrees = mousecoordinates(event);
-        var degCur = inDeg(curent);
+        degCur = inDeg(curent);
         var cur = degrees - degCur;
             if (cur < 0) {cur += 360};
         var radians = inRad(degrees);
         
         start = oldStart + inRad(cur);
-        printChart();
+        animate();
+        //printChart();
     }
 }
 
+function animate() {
+    if (prevCur != degCur) {
+        printChart();
+        //console.log(prevCur, degCur);
+    };
+    requestAnimationFrame(animate);
+}
+
+//animate();
+
 function stopRecalculation() {
     isRecalculation = false;
+    prevCur = degCur;
+    //if (requestId) window.cancelAnimationFrame(requestId);
+    //requestId = 0;
 }
 
 function arctg360(xs, ys) {
@@ -114,3 +143,4 @@ function inRad(degrees){
 function inDeg(radians){
     return radians*180/Math.PI;
 }
+
